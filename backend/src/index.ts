@@ -21,14 +21,14 @@ const runGitActions = () => {
     fs.appendFileSync(logFile, `Staged all changes.\n`);
 
     try {
-      const commit = execSync('git commit -m "Automated commit of Gmail Automation code"', { cwd: rootDir, encoding: 'utf8' });
+      const commit = execSync('git commit -m "Update build script to run prisma generate"', { cwd: rootDir, encoding: 'utf8' });
       fs.appendFileSync(logFile, `Git Commit:\n${commit}\n`);
     } catch (commitErr: any) {
       fs.appendFileSync(logFile, `Commit skipped/failed: ${commitErr.message}\n`);
     }
 
     fs.appendFileSync(logFile, `Running git push...\n`);
-    const push = execSync('git push -u origin main', { cwd: rootDir, encoding: 'utf8', stdio: 'pipe' });
+    const push = execSync('git push origin main', { cwd: rootDir, encoding: 'utf8', stdio: 'pipe' });
     fs.appendFileSync(logFile, `Git Push stdout:\n${push}\n`);
   } catch (err: any) {
     fs.appendFileSync(logFile, `Error executing git actions:\n`);
