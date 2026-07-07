@@ -1,0 +1,126 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TransactionStatus {
+  UNUSED
+  VERIFIED
+  MANUAL_REVIEW
+  DUPLICATE
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+}
+
+enum ParseMethod {
+  REGEX
+  AI
+  MANUAL
+}
+
+enum UserRole {
+  ADMIN
+  OPERATOR
+  VIEWER
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         UserRole  @default(VIEWER)
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  verifications BankTransaction[] @relation("VerifiedBy")
+
+  @@map("users")
+}
+
+model BankConfig {
+  id             String   @id @default(cuid())
+  bankName       String   @unique
+  senderEmails   String[]
+  keywords       String[]
+  parserPatterns Json?
+  isEnabled      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("bank_configs")
+}
+
+model BankTransaction {
+  id                 String            @id @default(cuid())
+  gmailMessageId     String            @unique
+  gmailHistoryId     String
+  senderEmail        String
+  bankName           String
+  subject            String
+  receivedAt         DateTime
+
+  utr                String            @unique
+  amount             Decimal           @db.Decimal(15, 2)
+  currency           String            @default("INR")
+  transactionType    TransactionType
+  payerName          String?
+  payerAccount       String?
+  payerUpiId         String?
+  beneficiaryAccount String?
+
+  parseMethod        ParseMethod
+  parseConfidence    Float
+  rawEmailBody       String            @db.Text
+
+  status             TransactionStatus @default(UNUSED)
+
+  sheetsSynced       Boolean           @default(false)
+  sheetsSyncedAt     DateTime?
+  sheetsRowIndex     Int?
+
+  verifiedAt         DateTime?
+  verifiedById       String?
+  verifiedBy         User?             @relation("VerifiedBy", fields: [verifiedById], references: [id])
+  verificationNote   String?
+  employeeId         String?
+
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@index([status])
+  @@index([bankName])
+  @@index([receivedAt])
+  @@map("bank_transactions")
+}
+
+model GmailPollingState {
+  id           String   @id @default(cuid())
+  historyId    String
+  lastPolledAt DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("gmail_polling_state")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
