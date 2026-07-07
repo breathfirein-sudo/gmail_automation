@@ -21,7 +21,7 @@ const runGitActions = () => {
     fs.appendFileSync(logFile, `Staged all changes.\n`);
 
     try {
-      const commit = execSync('git commit -m "Support multiple CORS origins in WEB_ORIGIN"', { cwd: rootDir, encoding: 'utf8' });
+      const commit = execSync('git commit -m "Add vercel.json rewrite rules for React Router SPA"', { cwd: rootDir, encoding: 'utf8' });
       fs.appendFileSync(logFile, `Git Commit:\n${commit}\n`);
     } catch (commitErr: any) {
       fs.appendFileSync(logFile, `Commit skipped/failed: ${commitErr.message}\n`);
