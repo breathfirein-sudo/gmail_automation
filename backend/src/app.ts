@@ -15,9 +15,10 @@ export function createApp(): Application {
   app.use(helmet());
 
   // CORS
+  const allowedOrigins = env.WEB_ORIGIN.split(',').map((o) => o.trim());
   app.use(
     cors({
-      origin: env.WEB_ORIGIN,
+      origin: allowedOrigins.length === 1 ? allowedOrigins[0] : allowedOrigins,
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
